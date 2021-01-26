@@ -1,10 +1,14 @@
 import _ from "lodash";
 import React, { useState } from "react";
+import { toast } from "react-toastify";
 import List from "../components/List";
 import Search from "../components/Search";
 import SearchItem from "../components/SearchItem";
 import { fetchData } from "../services/fetchData";
 import Loader from "../utils/Loader";
+import Header from "../components/Header"
+import history from "../utils/history";
+
 
 const Home = () => {
   const [query, setQuery] = useState("");
@@ -41,8 +45,6 @@ const Home = () => {
    * @param {*} value
    */
   const sendQuery = async (value) => {
-    
-    console.log("sending query");
     setLoading(true);
     const { cancelPrevQuery, result } = await fetchData(value);
     setLoading(false);
@@ -70,14 +72,23 @@ const Home = () => {
     let country = searchResults.filter((ctry) => ctry.name === name);
 
     if (selectedCountries.some((ctry) => ctry.name === name)) {
-      return alert("Country already added");
+      toast.error("Country was already added to list!");
     } else {
       setSelectedCountries([...selectedCountries, ...country]);
+      toast.success("Country has been added to list!");
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    history.push("/");
+  };
+
   return (
-    <div className="container">
+    <>
+    <Header handleLogout={handleLogout}/>
+    <div className="container body">
       <div className="row justify-content-center">
         <div className="col-6 mt-2">
           <Search OnHandleInputChange={onChange} query={query} />
@@ -107,6 +118,7 @@ const Home = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

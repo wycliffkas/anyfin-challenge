@@ -1,6 +1,10 @@
 const router = require("express").Router();
-const { searchCountry } = require("../controller");
+const { searchCountry, createUser, login } = require("../controller");
+const { checkDuplicateEmail } = require("../middleware/verifySignUp");
+const { checkToken } = require("../middleware/authJWT");
 
-router.get('/country/:name', searchCountry);
+router.get("/country/:name", checkToken, searchCountry);
+router.post("/", checkDuplicateEmail, createUser);
+router.post("/login", login);
 
 module.exports = router;
