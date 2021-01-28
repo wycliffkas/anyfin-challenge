@@ -1,6 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "../assets/css/login.css";
 
 const SignUpForm = ({ handleInputChange, inputs, onHandleSaveUser }) => {
   return (

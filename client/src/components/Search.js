@@ -1,8 +1,22 @@
 import React from "react";
+import { ReactComponent as CancelIcon } from "../assets/images/cancel.svg";
 
-const Search = ({ OnHandleInputChange, query }) => {
+const Search = ({
+  OnHandleInputChange,
+  query,
+  setQuery,
+  setSearchResults,
+  handleSearch,
+  setMessage,
+}) => {
+  const cancel = () => {
+    setSearchResults([]);
+    setQuery("");
+    setMessage("");
+  };
+
   return (
-    <form>
+    <form className="search">
       <input
         type="text"
         name="query"
@@ -11,6 +25,15 @@ const Search = ({ OnHandleInputChange, query }) => {
         placeholder="Search country..."
         onChange={OnHandleInputChange}
       />
+      <CancelIcon onClick={cancel} className={query ? "show" : "hide"} />
+      <button
+        type="button"
+        className="btn btn-primary"
+        onClick={handleSearch}
+        disabled={!query}
+      >
+        Search
+      </button>
     </form>
   );
 };
