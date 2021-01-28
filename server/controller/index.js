@@ -4,15 +4,19 @@ const { sign } = require("jsonwebtoken");
 const models = require("../database/models");
 
 module.exports = {
-  searchCountry: async (req, res) => {
+  searchCountry: (req, res) => {
     const name = req.params.name;
-    await axios
+    axios
       .get(`https://restcountries.eu/rest/v2/name/${name}`)
       .then((result) => {
         res.send(result.data);
       })
       .catch((error) => {
-        console.log(error);
+        if (error.response) {
+          res.send({
+            message: "No Matches Found",
+          });
+        }
       });
   },
   createUser: async (req, res) => {
@@ -48,7 +52,6 @@ module.exports = {
           expiresIn: "1h",
         });
 
-
         return res.status(200).json({
           user: user.name,
           token: jsontoken,
@@ -58,7 +61,6 @@ module.exports = {
           message: "Invalid email or password",
         });
       }
-
     });
   },
 };

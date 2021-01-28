@@ -9,7 +9,7 @@ const SearchItem = ({ item, onAddToList }) => {
       <div className="result-button">
         <button
           type="button"
-          className="btn btn-primary"
+          className="btn btn-primary btn-small"
           onClick={() => onAddToList(item.name)}
         >
           Add to List

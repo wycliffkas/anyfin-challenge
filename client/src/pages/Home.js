@@ -1,18 +1,15 @@
-import _ from "lodash";
+import axios from "axios";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
-import List from "../components/List";
+import Header from "../components/Header";
+import List from "./List";
 import Search from "../components/Search";
 import SearchItem from "../components/SearchItem";
-import { fetchData } from "../services/fetchData";
-import Loader from "../utils/Loader";
-import Header from "../components/Header"
 import history from "../utils/history";
-
+import Loader from "../utils/Loader";
 
 const Home = () => {
   const [query, setQuery] = useState("");
-  const [searchQuery, setSearchQuery] = useState({});
   const [searchResults, setSearchResults] = useState([]);
   const [message, setMessage] = useState("");
   const [selectedCountries, setSelectedCountries] = useState([]);
@@ -24,43 +21,7 @@ const Home = () => {
    * @param {*} { target: { value } }
    */
   const onChange = ({ target: { value } }) => {
- 
     setQuery(value);
-
-    const search = _.debounce(sendQuery, 200);
-
-    setSearchQuery((prevSearch) => {
-      if (prevSearch.cancel) {
-        prevSearch.cancel();
-      }
-      return search;
-    });
-
-    search(value);
-  };
-
-  /**
-   * In charge to send the value
-   * to the API.
-   * @param {*} value
-   */
-  const sendQuery = async (value) => {
-    setLoading(true);
-    const { cancelPrevQuery, result } = await fetchData(value);
-    setLoading(false);
-
-    if (cancelPrevQuery) return;
-
-    console.log("result", result);
-
-    if (result) {
-      console.log("hererxxxx");
-      setSearchResults(result);
-      
-    } else {
-      setMessage("Not Found");
-      setSearchResults([]);
-    }
   };
 
   /**
@@ -79,45 +40,73 @@ const Home = () => {
     }
   };
 
+  /**
+   * logout users
+   */
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     history.push("/");
   };
 
+  /**
+   * search country
+   * from API.
+   * @param {*} name
+   */
+  const onHandleSearch = async (event) => {
+    event.preventDefault();
+
+    const token = localStorage.getItem("token");
+    setLoading(true);
+    const result = await axios.get(`http://localhost:8080/country/${query}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    setLoading(false);
+
+    result.data.message
+      ? setMessage(result.data.message)
+      : setSearchResults(result.data);
+  };
+
   return (
     <>
-    <Header handleLogout={handleLogout}/>
-    <div className="container body">
-      <div className="row justify-content-center">
-        <div className="col-6 mt-2">
-          <Search OnHandleInputChange={onChange} query={query} />
+      <Header handleLogout={handleLogout} />
+      <div className="container body">
+        <div className="row justify-content-center">
+          <div className="col-6 mt-2">
+            <Search
+              OnHandleInputChange={onChange}
+              setQuery={setQuery}
+              setSearchResults={setSearchResults}
+              query={query}
+              handleSearch={onHandleSearch}
+              setMessage={setMessage}
+            />
+          </div>
+        </div>
+
+        <div className="row justify-content-center">
+          <div className="col-10 mt-2">
+
+            {searchResults &&
+              searchResults.length > 0 &&
+              searchResults.map((item, index) => (
+                <SearchItem item={item} key={index} onAddToList={addToList} />
+              ))}
+
+            {message ? <p className="center-text">{message}</p> : ""}
+
+            {loading ? <Loader /> : null}
+          </div>
+        </div>
+        <div className="row justify-content-center">
+          <div className="col-8 mt-4">
+            <List selectedCountries={selectedCountries} />
+          </div>
         </div>
       </div>
-
-      <div className="row justify-content-center">
-        <div className="col-10 mt-2">
-          {searchResults &&
-            searchResults.length > 0 &&
-            searchResults.map((item, index) => (
-              <SearchItem item={item} key={index} onAddToList={addToList} />
-            ))}
-
-          {query && !searchResults.length  && !loading? (
-            <p className="center-text">No matches Found</p>
-          ) : (
-            ""
-          )}
-
-          {loading ? <Loader /> : null}
-        </div>
-      </div>
-      <div className="row justify-content-center">
-        <div className="col-8 mt-4">
-          <List selectedCountries={selectedCountries} />
-        </div>
-      </div>
-    </div>
     </>
   );
 };
